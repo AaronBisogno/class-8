@@ -2,7 +2,7 @@ import express from "express";
 import ProductManager from "../ProductManager.js";
 
 export const productsRouter = express.Router();
-const productManager = new ProductManager("../products.json")
+const productManager = new ProductManager("./src/products.json")
 
 productsRouter.get('/', async (req, res) => {
     const countLimit = req.query.limit;
@@ -13,6 +13,7 @@ productsRouter.get('/', async (req, res) => {
         return res.status(200).send({result});
     } else return res.status(200).send({products}); 
 })
+
 productsRouter.get('/:pid', async (req, res) => {
     const productId = req.params.pid;
     if(productId){
@@ -21,20 +22,26 @@ productsRouter.get('/:pid', async (req, res) => {
         res.status(200).send({result})
     } else res.status(404).send({status: "error", msg: "Product not found." })
 })
+
 productsRouter.post('/', async (req, res) => {
-    const newProduct = await productManager.addProduct(req.body);
-    if (newProduct) {
-        res.status(200).send({newProduct});
-    } else {
-        res.status(400).send(newProduct);
-    }
+    const newProduct = req.body;
+    const result = await productManager.addProduct(newProduct);
+    res.send({result});
 })
 
 productsRouter.put('/:pid', async (req, res) => {
-    const productid = req.params.pid;
+    const productid = parseInt(req.params.pid);
     const newInfo = req.body
-    const updatedProduct = productManager.updateProduct(productid, newInfo);
-    if(updatedProduct){
+    if (newInfo && Object.keys(newInfo).length > 0) {
+        const updatedProduct = await productManager.updateProduct(productid, newInfo);
         res.status(200).send({updatedProduct})
-    } else res.status(400).send({updatedProduct})
+    } else {
+        res.status(400).send({error: "Invalid update, info missing."})
+    }
+})
+
+productsRouter.delete('/:pid', async (req, res) => {
+    const productId = parseInt(req.params.pid);
+    const product = await productManager.deleteProduct(productId);
+    res.status(200).send({product})
 })

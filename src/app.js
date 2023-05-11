@@ -15,3 +15,7 @@ app.use('/api/cart', cartRouter);
 app.listen(port, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${port}`)
 })
+
+app.use('*', (req, res) =>{
+    res.status(404).send({msg: "Route not found"});
+})
